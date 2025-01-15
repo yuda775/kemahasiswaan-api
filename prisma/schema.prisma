@@ -1,0 +1,223 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql" // Sesuaikan dengan database yang digunakan
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  id             Int              @id @default(autoincrement())
+  name           String
+  npm            String           @unique
+  email          String           @unique
+  password       String
+  advisorId      Int?
+  advisor        Lecturer?        @relation(fields: [advisorId], references: [id], onDelete: SetNull)
+  birthDate      DateTime
+  birthPlace     String
+  gender         Gender
+  address        String
+  phoneNumber    String           @unique
+  enrollmentYear Int
+  graduationYear Int?
+  programId      Int
+  program        ProgramStudy     @relation(fields: [programId], references: [id], onDelete: Restrict)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  activities     StudentActivity[]
+  questionnaireSubmissions QuestionnaireSubmission[]
+  lecturerMentored Lecturer[]     @relation("StudentAdvisor")
+  ukms           UKM[]
+}
+
+model Lecturer {
+  id         Int       @id @default(autoincrement())
+  name       String
+  email      String    @unique
+  password   String
+  employeeNumber String @unique
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+  studentsAdvised Student[] @relation("StudentAdvisor")
+
+  Student Student[]
+}
+
+model ProgramStudy {
+  id         Int      @id @default(autoincrement())
+  code       String   
+  name       String   
+  faculty    String?
+  degree     Degree   @default(S1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  students   Student[]
+}
+
+model StudentActivity {
+  id                       Int              @id @default(autoincrement())
+  studentId                Int
+  student                  Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  academicYearId           Int
+  academicYear             AcademicYear     @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  activityCategoryId       Int
+  activityCategory         ActivityCategory @relation(fields: [activityCategoryId], references: [id], onDelete: Restrict)
+  point                    Int
+  activityDate             DateTime
+  advisorVerification      VerificationStatus @default(PENDING)
+  studentAffairVerification VerificationStatus @default(PENDING)
+  createdAt                DateTime         @default(now())
+  updatedAt                DateTime         @updatedAt
+  comments                 ActivityComment[]
+}
+
+model ActivityCategory {
+  id         Int              @id @default(autoincrement())
+  name       String           @unique
+  points     Int
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  deletedAt  DateTime?
+  activities StudentActivity[]
+}
+
+model ActivityComment {
+  id                Int              @id @default(autoincrement())
+  studentActivityId Int
+  studentActivity   StudentActivity  @relation(fields: [studentActivityId], references: [id], onDelete: Cascade)
+  commenterType     CommenterType
+  commenterId       Int
+  comment           String
+  createdAt         DateTime         @default(now())
+}
+
+model StudentAffairs {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  password   String
+  phoneNumber String  @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Admin {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  password   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model AcademicYear {
+  id        Int      @id @default(autoincrement())
+  year      String   
+  semester  Semester
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  activities StudentActivity[]
+}
+
+model UKM {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  description String
+  headId      Int?
+  head        Student?       @relation(fields: [headId], references: [id], onDelete: Restrict)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  proposals   Proposal[]
+}
+
+model Proposal {
+  id          Int            @id @default(autoincrement())
+  ukmId       Int
+  ukm         UKM            @relation(fields: [ukmId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  includesFunds Boolean
+  status      ProposalStatus @default(PENDING)
+  presentationDate DateTime?
+  categoryProposal ProposalCategory
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  comments    ProposalComment[]
+  files       ProposalFile[]
+}
+
+model ProposalComment {
+  id           Int            @id @default(autoincrement())
+  proposalId   Int
+  proposal     Proposal       @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  commenterType CommenterType
+  commenterId  Int
+  comment      String
+  createdAt    DateTime       @default(now())
+}
+
+model ProposalFile {
+  id        Int      @id @default(autoincrement())
+  proposalId Int
+  proposal  Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  filePath  String
+  fileName  String
+  fileType  String
+  createdAt DateTime @default(now())
+}
+
+model QuestionnaireSubmission {
+  id          Int      @id @default(autoincrement())
+  studentId   Int
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  filePath    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum Degree {
+  D3
+  S1
+  S2
+  S3
+}
+
+enum VerificationStatus {
+  APPROVED
+  REJECTED
+  PENDING
+}
+
+enum Semester {
+  GANJIL
+  GENAP
+}
+
+enum ProposalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ProposalCategory {
+  INTERNAL
+  EXTERNAL
+}
+
+enum CommenterType {
+  ADVISOR
+  STUDENTAFFAIRS
+  ADMIN
+  UKMHEAD
+}

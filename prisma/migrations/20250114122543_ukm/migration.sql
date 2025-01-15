@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `UKM` MODIFY `headId` INTEGER NULL;
