@@ -71,10 +71,6 @@ module.exports = {
       });
     }
   },
-  logout: (req, res) => {
-    res.clearCookie("token");
-    res.json({ message: "Logout successfully." });
-  },
   getStudents: async (req, res) => {
     try {
       const students = await prisma.student.findMany();

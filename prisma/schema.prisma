@@ -63,10 +63,11 @@ model StudentActivity {
   student                  Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
   academicYearId           Int
   academicYear             AcademicYear     @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
-  activityCategoryId       Int
-  activityCategory         ActivityCategory @relation(fields: [activityCategoryId], references: [id], onDelete: Restrict)
+  activityCategory         String
   point                    Int
+  activityName             String
   activityDate             DateTime
+  filePath                 String
   advisorVerification      VerificationStatus @default(PENDING)
   studentAffairVerification VerificationStatus @default(PENDING)
   createdAt                DateTime         @default(now())
@@ -80,16 +81,14 @@ model ActivityCategory {
   points     Int
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
-  deletedAt  DateTime?
-  activities StudentActivity[]
+  deletedAt  DateTime?  
 }
 
 model ActivityComment {
   id                Int              @id @default(autoincrement())
   studentActivityId Int
   studentActivity   StudentActivity  @relation(fields: [studentActivityId], references: [id], onDelete: Cascade)
-  commenterType     CommenterType
-  commenterId       Int
+  commenterType     CommenterType  
   comment           String
   createdAt         DateTime         @default(now())
 }
@@ -98,8 +97,7 @@ model StudentAffairs {
   id         Int      @id @default(autoincrement())
   name       String
   email      String   @unique
-  password   String
-  phoneNumber String  @unique
+  password   String  
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
@@ -154,8 +152,7 @@ model ProposalComment {
   id           Int            @id @default(autoincrement())
   proposalId   Int
   proposal     Proposal       @relation(fields: [proposalId], references: [id], onDelete: Cascade)
-  commenterType CommenterType
-  commenterId  Int
+  commenterType CommenterType  
   comment      String
   createdAt    DateTime       @default(now())
 }
@@ -216,6 +213,7 @@ enum ProposalCategory {
 }
 
 enum CommenterType {
+  STUDENT
   ADVISOR
   STUDENTAFFAIRS
   ADMIN

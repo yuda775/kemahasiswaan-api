@@ -4,7 +4,6 @@ const studentService = require("../service/student");
 
 router.post("/login", studentService.login);
 router.post("/register", studentService.register);
-router.post("/logout", studentService.logout);
 
 router.get("/", studentService.getStudents);
 router.patch("/:id", studentService.updateStudent);
