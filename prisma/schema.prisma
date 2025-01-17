@@ -15,12 +15,12 @@ model Student {
   password       String
   advisorId      Int?
   advisor        Lecturer?        @relation(fields: [advisorId], references: [id], onDelete: SetNull)
-  birthDate      DateTime
+  birthDate      String
   birthPlace     String
   gender         Gender
   address        String
   phoneNumber    String           @unique
-  enrollmentYear Int
+  enrollmentYear Int        
   graduationYear Int?
   programId      Int
   program        ProgramStudy     @relation(fields: [programId], references: [id], onDelete: Restrict)

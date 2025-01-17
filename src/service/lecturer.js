@@ -2,6 +2,34 @@ const prisma = require("../config/database");
 const bcrypt = require("bcryptjs");
 
 module.exports = {
+  login: async (req, res) => {
+    const { email, password } = req.body;
+    try {
+      const lecturer = await prisma.lecturer.findUnique({
+        where: { email },
+      });
+      if (!lecturer || !(await bcrypt.compare(password, lecturer.password))) {
+        return res.status(401).json({
+          message: "Invalid email or password.",
+        });
+      }
+      const token = jwt.sign(
+        { id: lecturer.id, email: lecturer.email, role: "lecturer" },
+        process.env.JWT_SECRET,
+        { expiresIn: "30h" }
+      );
+      res.json({
+        data: { token, lecturer },
+        message: "Login successfully.",
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: error.message,
+        message: "Error logging in.",
+      });
+    }
+  },
+
   getLecturers: async (req, res) => {
     try {
       const lecturers = await prisma.lecturer.findMany({

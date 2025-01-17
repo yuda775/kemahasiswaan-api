@@ -23,10 +23,18 @@ module.exports = {
       const student = await prisma.student.create({
         data: {
           ...rest,
+          birthDate: req.body.birthDate.split("T")[0],
+          enrollmentYear: new Date(req.body.enrollmentYear).getFullYear(),
+          graduationYear: new Date(req.body.graduationYear).getFullYear(),
           password: await bcrypt.hash(req.body.password, 10),
           program: {
             connect: {
               id: parseInt(programId),
+            },
+          },
+          advisor: {
+            connect: {
+              id: parseInt(advisorId),
             },
           },
         },
@@ -100,20 +108,70 @@ module.exports = {
   },
   updateStudent: async (req, res) => {
     const id = parseInt(req.params.id);
+
     try {
-      const { password, ...rest } = req.body;
+      const { password, programId, advisorId, ...rest } = req.body;
+
+      if (!programId || isNaN(programId)) {
+        return res
+          .status(400)
+          .json({ message: "Program ID is required and must be a number." });
+      }
+
+      const updateData = {
+        ...rest,
+        program: {
+          connect: {
+            id: parseInt(programId),
+          },
+        },
+      };
+
+      if (advisorId && !isNaN(advisorId)) {
+        updateData.advisor = {
+          connect: {
+            id: parseInt(advisorId),
+          },
+        };
+      }
+
+      // Lakukan pembaruan dengan Prisma
       const updatedStudent = await prisma.student.update({
         where: { id },
-        data: rest,
+        data: updateData,
       });
+
+      // Kirim respon sukses
       res.json({
         data: updatedStudent,
         message: "Student updated successfully.",
       });
     } catch (error) {
+      // Tangani error
       res.status(500).json({
         error: error.message,
+        stack: error.stack,
         message: "Error updating student.",
+      });
+    }
+  },
+  changePassword: async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+      const updatedStudent = await prisma.student.update({
+        where: { id },
+        data: {
+          password: await bcrypt.hash(req.body.password, 10),
+        },
+      });
+      res.json({
+        data: updatedStudent,
+        message: "Password changed successfully.",
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: error.message,
+        message: "Error changing password.",
       });
     }
   },
