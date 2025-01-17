@@ -73,7 +73,20 @@ module.exports = {
   },
   getStudents: async (req, res) => {
     try {
-      const students = await prisma.student.findMany();
+      const students = await prisma.student.findMany({
+        include: {
+          advisor: {
+            select: {
+              name: true,
+            },
+          },
+          program: {
+            select: {
+              code: true,
+            },
+          },
+        },
+      });
       res.json({
         data: students,
         message: "Students retrieved successfully.",
@@ -88,9 +101,10 @@ module.exports = {
   updateStudent: async (req, res) => {
     const id = parseInt(req.params.id);
     try {
+      const { password, ...rest } = req.body;
       const updatedStudent = await prisma.student.update({
         where: { id },
-        data: req.body,
+        data: rest,
       });
       res.json({
         data: updatedStudent,

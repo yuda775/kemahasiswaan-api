@@ -76,10 +76,18 @@ module.exports = {
   updateLecturer: async (req, res) => {
     const id = parseInt(req.params.id);
     try {
+      const { password, ...rest } = req.body;
+      const dataToUpdate = { ...rest };
+
+      if (password) {
+        dataToUpdate.password = await bcrypt.hash(password, 10);
+      }
+
       const updatedLecturer = await prisma.lecturer.update({
         where: { id },
-        data: req.body,
+        data: dataToUpdate,
       });
+
       res.json({
         data: updatedLecturer,
         message: "Lecturer updated successfully.",

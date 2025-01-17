@@ -159,11 +159,10 @@ model ProposalComment {
 
 model ProposalFile {
   id        Int      @id @default(autoincrement())
+  name       String
+  path       String
   proposalId Int
-  proposal  Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
-  filePath  String
-  fileName  String
-  fileType  String
+  proposal  Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)  
   createdAt DateTime @default(now())
 }
 

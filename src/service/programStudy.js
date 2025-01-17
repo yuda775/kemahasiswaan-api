@@ -54,9 +54,24 @@ module.exports = {
   },
 
   deleteProgramStudy: async (req, res) => {
-    const id = parseInt(req.params.id);
+    const programStudyId = parseInt(req.params.id, 10);
+
     try {
-      await prisma.programStudy.delete({ where: { id } });
+      const studentUsingProgramStudy = await prisma.student.findFirst({
+        where: {
+          programId: programStudyId,
+        },
+      });
+
+      if (studentUsingProgramStudy) {
+        return res.status(400).json({
+          message:
+            "Tidak dapat menghapus program studi karena sedang digunakan oleh mahasiswa.",
+        });
+      }
+
+      await prisma.programStudy.delete({ where: { id: programStudyId } });
+
       res.status(200).json({
         message: "Program study deleted successfully.",
       });

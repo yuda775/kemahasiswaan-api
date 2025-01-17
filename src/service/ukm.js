@@ -3,7 +3,17 @@ const prisma = require("../config/database");
 module.exports = {
   getUkms: async (req, res) => {
     try {
-      const ukms = await prisma.uKM.findMany();
+      const ukms = await prisma.uKM.findMany({
+        include: {
+          head: {
+            select: {
+              id: true,
+              name: true,
+              npm: true,
+            },
+          },
+        },
+      });
       res.json({
         data: ukms,
         message: "UKMs retrieved successfully.",
