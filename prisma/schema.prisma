@@ -94,7 +94,7 @@ model StudentActivity {
   studentAffairVerification VerificationStatus @default(PENDING)
   createdAt                DateTime         @default(now())
   updatedAt                DateTime         @updatedAt
-  comments                 ActivityComment[]
+  comments                 String?
 }
 
 model ActivityCategory {
@@ -104,15 +104,6 @@ model ActivityCategory {
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
   deletedAt  DateTime?  
-}
-
-model ActivityComment {
-  id                Int              @id @default(autoincrement())
-  studentActivityId Int
-  studentActivity   StudentActivity  @relation(fields: [studentActivityId], references: [id], onDelete: Cascade)
-  commenterType     CommenterType  
-  comment           String
-  createdAt         DateTime         @default(now())
 }
 
 model StudentAffairs {
@@ -137,6 +128,8 @@ model AcademicYear {
   id        Int      @id @default(autoincrement())
   year      String   
   semester  Semester
+  startDate DateTime @db.Date
+  endDate   DateTime @db.Date
   isActive  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

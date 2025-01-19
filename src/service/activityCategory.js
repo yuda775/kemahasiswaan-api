@@ -4,11 +4,7 @@ const prisma = new PrismaClient();
 module.exports = {
   getActivityCategories: async (req, res) => {
     try {
-      const activityCategories = await prisma.activityCategory.findMany({
-        where: {
-          deletedAt: null,
-        },
-      });
+      const activityCategories = await prisma.activityCategory.findMany();
       res.json({
         data: activityCategories,
         message: "Activity categories retrieved successfully.",
@@ -57,12 +53,11 @@ module.exports = {
   deleteActivityCategory: async (req, res) => {
     const id = parseInt(req.params.id);
     try {
-      await prisma.activityCategory.update({
+      await prisma.activityCategory.delete({
         where: { id },
-        data: { deletedAt: new Date() },
       });
       res.status(200).json({
-        message: "Activity category soft-deleted successfully.",
+        message: "Activity category deleted successfully.",
       });
     } catch (error) {
       res.status(500).json({

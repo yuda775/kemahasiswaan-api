@@ -30,6 +30,14 @@ module.exports = {
         where: {
           studentId: parseInt(id, 10),
         },
+        include: {
+          academicYear: {
+            select: {
+              year: true,
+              semester: true,
+            },
+          },
+        },
       });
       res.json({
         data: studentActivities,
@@ -45,6 +53,42 @@ module.exports = {
         where: {
           student: {
             advisorId: parseInt(id, 10),
+          },
+        },
+        include: {
+          academicYear: {
+            select: {
+              year: true,
+              semester: true,
+            },
+          },
+        },
+      });
+      res.json({
+        data: studentActivities,
+        message: "Student activities retrieved successfully.",
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: error.message,
+        message: "Error retrieving student activities by advisor ID.",
+      });
+    }
+  },
+
+  getStudentActivityByAtudentAffair: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const studentActivities = await prisma.studentActivity.findMany({
+        where: {
+          advisorVerification: "APPROVED",
+        },
+        include: {
+          academicYear: {
+            select: {
+              year: true,
+              semester: true,
+            },
           },
         },
       });
@@ -80,15 +124,7 @@ module.exports = {
         return res.status(400).json({ error: "No active academic year found" });
       }
 
-      const academicYearDir = academicYear.year.replace(/\//g, "-");
-      const studentDir = student.npm;
-      const uploadDir = path.join(
-        __dirname,
-        "../../public/student-activity",
-        academicYearDir,
-        academicYear.semester,
-        studentDir
-      );
+      const uploadDir = path.join(__dirname, "../../public/student-activity");
 
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
@@ -101,13 +137,21 @@ module.exports = {
 
       const newStudentActivity = await prisma.studentActivity.create({
         data: {
-          studentId: parseInt(req.body.studentId, 10),
           point: parseInt(req.body.point, 10),
           filePath: newFileName,
-          academicYearId: parseInt(academicYear.id, 10),
           activityCategory: req.body.activityCategory,
           activityName: req.body.activityName,
           activityDate: new Date(req.body.activityDate).toISOString(),
+          student: {
+            connect: {
+              id: parseInt(req.body.studentId, 10),
+            },
+          },
+          academicYear: {
+            connect: {
+              id: parseInt(academicYear.id, 10),
+            },
+          },
         },
       });
 
@@ -132,7 +176,11 @@ module.exports = {
       });
 
       if (deletedStudentActivity.filePath) {
-        const filePath = path.resolve(deletedStudentActivity.filePath);
+        const filePath = path.resolve(
+          __dirname,
+          "../../public/student-activity/",
+          deletedStudentActivity.filePath
+        );
         if (fs.existsSync(filePath)) {
           await fs.promises.unlink(filePath);
         }

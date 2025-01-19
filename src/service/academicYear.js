@@ -35,19 +35,37 @@ module.exports = {
 
   updateAcademicYear: async (req, res) => {
     const id = parseInt(req.params.id);
+    // try {
+    //   const updatedAcademicYear = await prisma.academicYear.update({
+    //     where: { id },
+    //     data: req.body,
+    //   });
+    //   res.json({
+    //     data: updatedAcademicYear,
+    //     message: "Academic year updated successfully.",
+    //   });
+    // } catch (error) {
+    //   res.status(500).json({
+    //     error: error.message,
+    //     message: "Error updating academic year.",
+    //   });
+    // }
     try {
-      const updatedAcademicYear = await prisma.academicYear.update({
-        where: { id },
-        data: req.body,
+      await prisma.academicYear.updateMany({
+        data: { isActive: false },
+      });
+      const activeAcademicYear = await prisma.academicYear.update({
+        where: { id: parseInt(id) },
+        data: { isActive: true },
       });
       res.json({
-        data: updatedAcademicYear,
-        message: "Academic year updated successfully.",
+        data: activeAcademicYear,
+        message: "Academic year set as active successfully.",
       });
     } catch (error) {
       res.status(500).json({
         error: error.message,
-        message: "Error updating academic year.",
+        message: "Error setting active academic year.",
       });
     }
   },
@@ -55,6 +73,17 @@ module.exports = {
   deleteAcademicYear: async (req, res) => {
     const id = parseInt(req.params.id);
     try {
+      const relatedData = await prisma.studentActivity.findFirst({
+        where: { academicYearId: id },
+      });
+
+      if (relatedData) {
+        return res.status(400).json({
+          message:
+            "Tidak dapat menghapus tahun akademik karena ada data berelasi.",
+        });
+      }
+
       await prisma.academicYear.delete({ where: { id } });
       res.status(200).json({ message: "Academic year deleted successfully." });
     } catch (error) {

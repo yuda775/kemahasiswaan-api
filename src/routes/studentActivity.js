@@ -12,6 +12,11 @@ router.get(
   "/advisor/:id",
   studentActivityService.getStudentActivityByAdvisorId
 );
+router.get(
+  "/student-affair/",
+  studentActivityService.getStudentActivityByAtudentAffair
+);
+
 router.post("/", studentActivityService.createStudentActivity);
 router.delete("/:id", studentActivityService.abortStudentActivity);
 router.patch("/:id", studentActivityService.updateStudentActivity);
