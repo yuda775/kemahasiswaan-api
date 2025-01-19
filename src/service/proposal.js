@@ -48,7 +48,7 @@ module.exports = {
         await prisma.proposalFile.create({
           data: {
             name: file.name,
-            path: filePathFull,
+            path: newFileName,
             proposalId: proposal.id,
           },
         });

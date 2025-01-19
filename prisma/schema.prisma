@@ -26,10 +26,32 @@ model Student {
   program        ProgramStudy     @relation(fields: [programId], references: [id], onDelete: Restrict)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
-  activities     StudentActivity[]
-  questionnaireSubmissions QuestionnaireSubmission[]
+  activities     StudentActivity[]  
   lecturerMentored Lecturer[]     @relation("StudentAdvisor")
   ukms           UKM[]
+  answers        QuestionnaireAnswer[]
+}
+
+model QuestionnaireSubmission {
+  id          Int      @id @default(autoincrement())  
+  title       String
+  description String
+  graduationYears String
+  submissionLink    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt  
+  answers     QuestionnaireAnswer[]
+}  
+
+model QuestionnaireAnswer {
+  id                       Int                     @id @default(autoincrement())  
+  questionnaireSubmissionId Int
+  questionnaireSubmission  QuestionnaireSubmission @relation(fields: [questionnaireSubmissionId], references: [id], onDelete: Cascade)
+  studentId                Int
+  student                  Student                 @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  filePath                   String
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
 }
 
 model Lecturer {
@@ -166,16 +188,7 @@ model ProposalFile {
   createdAt DateTime @default(now())
 }
 
-model QuestionnaireSubmission {
-  id          Int      @id @default(autoincrement())
-  studentId   Int
-  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  title       String
-  description String
-  filePath    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
+
 
 enum Gender {
   MALE

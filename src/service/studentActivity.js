@@ -103,7 +103,7 @@ module.exports = {
         data: {
           studentId: parseInt(req.body.studentId, 10),
           point: parseInt(req.body.point, 10),
-          filePath: filePathFull,
+          filePath: newFileName,
           academicYearId: parseInt(academicYear.id, 10),
           activityCategory: req.body.activityCategory,
           activityName: req.body.activityName,

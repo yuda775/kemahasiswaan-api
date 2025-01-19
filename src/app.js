@@ -12,12 +12,19 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+
 app.use(morgan("dev"));
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
+app.use(cors());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(fileUpload());
+
+app.use("/file", express.static("public"));
 
 // Sample route to check if server is working
 app.get("/", (req, res) => {
@@ -30,6 +37,7 @@ app.use("/api/student-affairs", require("./routes/studentAffairs"));
 app.use("/api/student-activity", require("./routes/studentActivity"));
 app.use("/api/proposal", require("./routes/proposal"));
 app.use("/api/program-study", require("./routes/programStudy"));
+app.use("/api/alumni", require("./routes/alumni"));
 app.use("/api/academic-year", require("./routes/academicYear"));
 app.use("/api/activity-category", require("./routes/activityCategory"));
 app.use("/api/lecturer", require("./routes/lecturer"));
