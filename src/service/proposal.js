@@ -3,64 +3,56 @@ const fs = require("fs");
 const path = require("path");
 
 module.exports = {
-  // Create a new proposal
   createProposal: async (req, res) => {
+    const { title, category, activityDate } = req.body;
+    const files = req.files?.files || [];
+
     try {
-      console.log("Received request to create proposal", req.body);
-      console.log("Received files:", req.files);
-      const { ukmId, title, description, includesFunds, categoryProposal } =
-        req.body;
-      const files = req.files.filePath;
-
-      console.log("Creating proposal in database");
-      const proposal = await prisma.proposal.create({
-        data: {
-          ukmId: parseInt(ukmId, 10),
-          title,
-          description,
-          includesFunds: includesFunds === "true",
-          categoryProposal,
-        },
-      });
-      console.log("Proposal created with ID:", proposal.id);
-
-      const uploadDir = path.join(
-        __dirname,
-        "../../public/proposal/",
-        req.body.ukmId,
-        "/"
-      );
+      const uploadDir = path.join(__dirname, "../../public/proposal");
 
       if (!fs.existsSync(uploadDir)) {
-        console.log("Upload directory does not exist, creating:", uploadDir);
         fs.mkdirSync(uploadDir, { recursive: true });
       }
 
-      for (const file of files) {
-        const newFileName = `${Date.now()}-${file.name}`;
-        const filePathFull = path.join(uploadDir, newFileName);
-        console.log("Moving file to:", filePathFull);
+      const promises = files.map(
+        (file) =>
+          new Promise((resolve, reject) => {
+            const newFileName = `${Date.now()}-${file.name}`;
+            const filePathFull = path.join(uploadDir, newFileName);
 
-        // Memindahkan file
-        await file.mv(filePathFull);
+            file.mv(filePathFull, (err) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve({
+                  name: file.name,
+                  path: newFileName,
+                });
+              }
+            });
+          })
+      );
 
-        console.log("Creating proposal file entry in database");
-        await prisma.proposalFile.create({
-          data: {
-            name: file.name,
-            path: newFileName,
-            proposalId: proposal.id,
+      const filesData = await Promise.all(promises);
+
+      const proposal = await prisma.proposal.create({
+        data: {
+          title,
+          category,
+          activityDate: new Date(activityDate).toISOString(),
+          files: {
+            createMany: {
+              data: filesData,
+            },
           },
-        });
-      }
+        },
+      });
 
-      console.log("Proposal created successfully");
       res.status(201).json({
         data: proposal,
         message: "Proposal created successfully.",
       });
     } catch (error) {
-      console.error("Error creating proposal:", error.message);
       res.status(500).json({
         error: error.message,
         message: "Error creating proposal.",

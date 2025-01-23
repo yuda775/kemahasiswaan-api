@@ -143,33 +143,20 @@ model UKM {
   headId      Int?
   head        Student?       @relation(fields: [headId], references: [id], onDelete: Restrict)
   createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  proposals   Proposal[]
+  updatedAt   DateTime      @updatedAt  
 }
 
 model Proposal {
-  id          Int            @id @default(autoincrement())
-  ukmId       Int
-  ukm         UKM            @relation(fields: [ukmId], references: [id], onDelete: Cascade)
-  title       String
-  description String
-  includesFunds Boolean
-  status      ProposalStatus @default(PENDING)
-  presentationDate DateTime?
-  categoryProposal ProposalCategory
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  comments    ProposalComment[]
-  files       ProposalFile[]
-}
-
-model ProposalComment {
-  id           Int            @id @default(autoincrement())
-  proposalId   Int
-  proposal     Proposal       @relation(fields: [proposalId], references: [id], onDelete: Cascade)
-  commenterType CommenterType  
-  comment      String
-  createdAt    DateTime       @default(now())
+  id                Int            @id @default(autoincrement())  
+  title             String    
+  category          ProposalCategory
+  activityDate      DateTime
+  status            ProposalStatus @default(PENDING)
+  presentationDate  DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  comments          String?
+  files             ProposalFile[]
 }
 
 model ProposalFile {

@@ -26,6 +26,11 @@ app.use(fileUpload());
 
 app.use("/file", express.static("public"));
 
+app.use((req, res, next) => {
+  console.log(`Request URL: ${req.url}`);
+  next();
+});
+
 // Sample route to check if server is working
 app.get("/", (req, res) => {
   res.send("Welcome to Kemahasiswaan API");
