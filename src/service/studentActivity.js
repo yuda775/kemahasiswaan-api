@@ -1,6 +1,5 @@
 const prisma = require("../config/database");
 const fs = require("fs");
-const { get } = require("http");
 const path = require("path");
 
 module.exports = {
@@ -26,9 +25,27 @@ module.exports = {
   getStudentActivityByStudentId: async (req, res) => {
     try {
       const { id } = req.params;
+      const { academicYearId, advisorVerification, studentAffairVerification } =
+        req.query;
+      const filters = {
+        studentId: parseInt(id, 10),
+      };
+      if (academicYearId) {
+        filters.academicYearId = parseInt(academicYearId, 10);
+      }
+      if (advisorVerification) {
+        filters.advisorVerification = advisorVerification;
+      }
+      if (studentAffairVerification) {
+        filters.studentAffairVerification = studentAffairVerification;
+      }
+
       const studentActivities = await prisma.studentActivity.findMany({
         where: {
-          studentId: parseInt(id, 10),
+          ...filters,
+        },
+        orderBy: {
+          id: "desc",
         },
         include: {
           academicYear: {
@@ -49,17 +66,37 @@ module.exports = {
   getStudentActivityByAdvisorId: async (req, res) => {
     try {
       const { id } = req.params;
+      const { academicYearId, status } = req.query;
+
+      const filters = {
+        student: {
+          advisorId: parseInt(req.params.id, 10),
+        },
+      };
+      if (academicYearId) {
+        filters.academicYearId = parseInt(academicYearId, 10);
+      }
+      if (status) {
+        filters.advisorVerification = status;
+      }
       const studentActivities = await prisma.studentActivity.findMany({
         where: {
-          student: {
-            advisorId: parseInt(id, 10),
-          },
+          ...filters,
+        },
+        orderBy: {
+          id: "desc",
         },
         include: {
           academicYear: {
             select: {
               year: true,
               semester: true,
+            },
+          },
+          student: {
+            select: {
+              name: true,
+              npm: true,
             },
           },
         },
@@ -77,31 +114,51 @@ module.exports = {
   },
 
   getStudentActivityByAtudentAffair: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const studentActivities = await prisma.studentActivity.findMany({
-        where: {
-          advisorVerification: "APPROVED",
-        },
-        include: {
-          academicYear: {
-            select: {
-              year: true,
-              semester: true,
-            },
+    const { academicYearId, status } = req.query;
+
+    const filters = {
+      advisorVerification: "APPROVED",
+    };
+
+    if (academicYearId) {
+      filters.academicYearId = parseInt(academicYearId, 10);
+    }
+
+    if (status) {
+      filters.studentAffairVerification = status;
+    }
+
+    const studentActivities = await prisma.studentActivity.findMany({
+      where: filters,
+      select: {
+        id: true,
+        activityCategory: true,
+        activityName: true,
+        point: true,
+        comments: true,
+        studentAffairVerification: true,
+        academicYear: {
+          select: {
+            year: true,
+            semester: true,
           },
         },
-      });
-      res.json({
-        data: studentActivities,
-        message: "Student activities retrieved successfully.",
-      });
-    } catch (error) {
-      res.status(500).json({
-        error: error.message,
-        message: "Error retrieving student activities by advisor ID.",
-      });
-    }
+        student: {
+          select: {
+            name: true,
+            npm: true,
+          },
+        },
+      },
+      orderBy: {
+        id: "desc",
+      },
+    });
+
+    res.json({
+      data: studentActivities,
+      message: "Student activities retrieved successfully.",
+    });
   },
 
   createStudentActivity: async (req, res) => {
@@ -171,25 +228,36 @@ module.exports = {
     try {
       const { id } = req.params;
 
-      const deletedStudentActivity = await prisma.studentActivity.delete({
+      const studentActivity = await prisma.studentActivity.findUnique({
         where: { id: parseInt(id, 10) },
       });
 
-      if (deletedStudentActivity.filePath) {
-        const filePath = path.resolve(
-          __dirname,
-          "../../public/student-activity/",
-          deletedStudentActivity.filePath
-        );
-        if (fs.existsSync(filePath)) {
-          await fs.promises.unlink(filePath);
-        }
-      }
+      if (studentActivity.advisorVerification === "PENDING") {
+        const deletedStudentActivity = await prisma.studentActivity.delete({
+          where: { id: parseInt(id, 10) },
+        });
 
-      res.json({
-        data: deletedStudentActivity,
-        message: "Student activity aborted successfully.",
-      });
+        if (deletedStudentActivity.filePath) {
+          const filePath = path.resolve(
+            __dirname,
+            "../../public/student-activity/",
+            deletedStudentActivity.filePath
+          );
+          if (fs.existsSync(filePath)) {
+            await fs.promises.unlink(filePath);
+          }
+        }
+
+        res.json({
+          data: deletedStudentActivity,
+          message: "Kegiatan mahasiswa dibatalkan berhasil.",
+        });
+      } else {
+        res.status(400).json({
+          message:
+            "Kegiatan mahasiswa tidak dapat dibatalkan karena telah diverifikasi oleh dosen.",
+        });
+      }
     } catch (error) {
       res.status(500).json({
         error: error.message,

@@ -3,7 +3,11 @@ const prisma = require("../config/database");
 module.exports = {
   getAcademicYears: async (req, res) => {
     try {
-      const academicYears = await prisma.academicYear.findMany();
+      const academicYears = await prisma.academicYear.findMany({
+        orderBy: {
+          startDate: "desc",
+        },
+      });
       res.json({
         data: academicYears,
         message: "Academic years retrieved successfully.",

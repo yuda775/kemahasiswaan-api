@@ -64,7 +64,12 @@ module.exports = {
         });
       }
       const token = jwt.sign(
-        { id: student.id, email: student.email, role: "student" },
+        {
+          id: student.id,
+          name: student.name,
+          email: student.email,
+          role: "student",
+        },
         process.env.JWT_SECRET,
         { expiresIn: "30h" }
       );
