@@ -67,6 +67,7 @@ module.exports = {
         {
           id: student.id,
           name: student.name,
+          npm: student.npm,
           email: student.email,
           role: "student",
         },
