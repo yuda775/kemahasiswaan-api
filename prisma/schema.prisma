@@ -144,10 +144,14 @@ model UKM {
   head        Student?       @relation(fields: [headId], references: [id], onDelete: Restrict)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt  
+
+  Proposal Proposal[]
 }
 
 model Proposal {
   id                Int            @id @default(autoincrement())  
+  ukmId             Int
+  ukm               UKM            @relation(fields: [ukmId], references: [id], onDelete: Restrict)
   title             String    
   category          ProposalCategory
   activityDate      DateTime
@@ -161,10 +165,11 @@ model Proposal {
 
 model ProposalFile {
   id        Int      @id @default(autoincrement())
-  name       String
-  path       String
   proposalId Int
   proposal  Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)  
+  name       String
+  path       String
+  type       String?
   createdAt DateTime @default(now())
 }
 
@@ -202,12 +207,4 @@ enum ProposalStatus {
 enum ProposalCategory {
   INTERNAL
   EXTERNAL
-}
-
-enum CommenterType {
-  STUDENT
-  ADVISOR
-  STUDENTAFFAIRS
-  ADMIN
-  UKMHEAD
 }
