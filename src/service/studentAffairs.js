@@ -1,6 +1,7 @@
 const prisma = require("../config/database");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { changePassword } = require("./lecturer");
 
 module.exports = {
   login: async (req, res) => {
@@ -101,6 +102,27 @@ module.exports = {
       res.status(500).json({
         error: error.message,
         message: "Error deleting Student Affair.",
+      });
+    }
+  },
+
+  changePassword: async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+      const updatedStudentAffair = await prisma.studentAffairs.update({
+        where: { id },
+        data: {
+          password: await bcrypt.hash(req.body.password, 10),
+        },
+      });
+      res.json({
+        data: updatedStudentAffair,
+        message: "Password changed successfully.",
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: error.message,
+        message: "Error changing password.",
       });
     }
   },

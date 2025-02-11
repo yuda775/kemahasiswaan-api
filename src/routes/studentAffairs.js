@@ -9,4 +9,6 @@ router.post("/", studentAffairsService.createStudentAffair);
 router.patch("/:id", studentAffairsService.updateStudentAffair);
 router.delete("/:id", studentAffairsService.deleteStudentAffair);
 
+router.patch("/change-password/:id", studentAffairsService.changePassword);
+
 module.exports = router;
