@@ -24,8 +24,6 @@ module.exports = {
         data: {
           ...rest,
           birthDate: req.body.birthDate.split("T")[0],
-          enrollmentYear: new Date(req.body.enrollmentYear).getFullYear(),
-          graduationYear: new Date(req.body.graduationYear).getFullYear(),
           password: await bcrypt.hash(req.body.password, 10),
           program: {
             connect: {
@@ -57,6 +55,14 @@ module.exports = {
     try {
       const student = await prisma.student.findUnique({
         where: { email },
+        include: {
+          advisor: {
+            select: {
+              name: true,
+              employeeNumber: true,
+            },
+          },
+        },
       });
       if (!student || !(await bcrypt.compare(password, student.password))) {
         return res.status(401).json({
@@ -70,6 +76,12 @@ module.exports = {
           npm: student.npm,
           email: student.email,
           role: "student",
+          enrollmentYear: student.enrollmentYear,
+          graduationYear: student.graduationYear,
+          advisor: {
+            name: student.advisor.name,
+            nip: student.advisor.employeeNumber,
+          },
         },
         process.env.JWT_SECRET,
         { expiresIn: "30h" }

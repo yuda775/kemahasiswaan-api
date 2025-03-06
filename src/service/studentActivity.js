@@ -22,6 +22,32 @@ module.exports = {
     }
   },
 
+  getAccumulationByStudentId: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const totalSubmissions = await prisma.studentActivity.aggregate({
+        _sum: {
+          point: true,
+        },
+        where: {
+          studentId: parseInt(id, 10),
+          advisorVerification: "APPROVED",
+          studentAffairVerification: "APPROVED",
+        },
+      });
+
+      res.json({
+        data: totalSubmissions._sum.point || 0,
+        message: "Total submissions calculated successfully.",
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: error.message,
+        message: "Error calculating total submissions.",
+      });
+    }
+  },
+
   getStudentActivityByStudentId: async (req, res) => {
     try {
       const { id } = req.params;

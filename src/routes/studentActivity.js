@@ -1,5 +1,4 @@
 const express = require("express");
-const app = express();
 const router = express.Router();
 const studentActivityService = require("../service/studentActivity");
 
@@ -15,6 +14,11 @@ router.get(
 router.get(
   "/student-affair",
   studentActivityService.getStudentActivityByAtudentAffair
+);
+
+router.get(
+  "/student/:id/accumulation",
+  studentActivityService.getAccumulationByStudentId
 );
 
 router.post("/", studentActivityService.createStudentActivity);
