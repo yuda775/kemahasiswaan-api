@@ -13,7 +13,7 @@ router.get(
 );
 router.get(
   "/student-affair",
-  studentActivityService.getStudentActivityByAtudentAffair
+  studentActivityService.getStudentActivityByStudentAffair
 );
 
 router.get(

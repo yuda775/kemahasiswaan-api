@@ -105,30 +105,60 @@ module.exports = {
       if (status) {
         filters.advisorVerification = status;
       }
-      const studentActivities = await prisma.studentActivity.findMany({
+      const studentActivities = await prisma.student.findMany({
         where: {
-          ...filters,
-        },
-        orderBy: {
-          id: "desc",
-        },
-        include: {
-          academicYear: {
-            select: {
-              year: true,
-              semester: true,
+          advisorId: parseInt(id, 10),
+          activities: {
+            some: {
+              academicYearId: parseInt(academicYearId, 10),
             },
           },
-          student: {
+        },
+        select: {
+          id: true,
+          name: true,
+          npm: true,
+          activities: {
+            where: {
+              academicYearId: parseInt(academicYearId, 10),
+            },
             select: {
-              name: true,
-              npm: true,
+              id: true,
+              activityName: true,
+              activityCategory: true,
+              point: true,
+              filePath: true,
+              advisorVerification: true,
+              comments: true,
             },
           },
         },
       });
+
+      // const studentActivities = await prisma.studentActivity.findMany({
+      //   where: {
+      //     ...filters,
+      //   },
+      //   orderBy: {
+      //     id: "desc",
+      //   },
+      //   include: {
+      //     academicYear: {
+      //       select: {
+      //         year: true,
+      //         semester: true,
+      //       },
+      //     },
+      //     student: {
+      //       select: {
+      //         name: true,
+      //         npm: true,
+      //       },
+      //     },
+      //   },
+      // });
       res.json({
-        data: studentActivities,
+        data: { student: studentActivities },
         message: "Student activities retrieved successfully.",
       });
     } catch (error) {
@@ -139,7 +169,7 @@ module.exports = {
     }
   },
 
-  getStudentActivityByAtudentAffair: async (req, res) => {
+  getStudentActivityByStudentAffair: async (req, res) => {
     const { academicYearId, status } = req.query;
 
     const filters = {
@@ -154,35 +184,39 @@ module.exports = {
       filters.studentAffairVerification = status;
     }
 
-    const studentActivities = await prisma.studentActivity.findMany({
-      where: filters,
-      select: {
-        id: true,
-        activityCategory: true,
-        activityName: true,
-        point: true,
-        comments: true,
-        studentAffairVerification: true,
-        academicYear: {
-          select: {
-            year: true,
-            semester: true,
-          },
-        },
-        student: {
-          select: {
-            name: true,
-            npm: true,
+    const studentActivities = await prisma.student.findMany({
+      where: {
+        activities: {
+          some: {
+            academicYearId: parseInt(academicYearId, 10),
           },
         },
       },
-      orderBy: {
-        id: "desc",
+      select: {
+        id: true,
+        name: true,
+        npm: true,
+        activities: {
+          where: {
+            academicYearId: parseInt(academicYearId, 10),
+            advisorVerification: "APPROVED",
+          },
+          select: {
+            id: true,
+            activityName: true,
+            activityCategory: true,
+            point: true,
+            filePath: true,
+            advisorVerification: true,
+            studentAffairVerification: true,
+            comments: true,
+          },
+        },
       },
     });
 
     res.json({
-      data: studentActivities,
+      data: { student: studentActivities },
       message: "Student activities retrieved successfully.",
     });
   },

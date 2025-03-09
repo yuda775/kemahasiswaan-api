@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["groupBy"]
 }
 
 datasource db {
@@ -24,6 +25,7 @@ model Student {
   graduationYear Int?
   programId      Int
   program        ProgramStudy     @relation(fields: [programId], references: [id], onDelete: Restrict)
+  proposalAccess Boolean?         @default(false)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   activities     StudentActivity[]  

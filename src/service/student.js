@@ -82,6 +82,7 @@ module.exports = {
             name: student.advisor.name,
             nip: student.advisor.employeeNumber,
           },
+          proposalAccess: student.proposalAccess,
         },
         process.env.JWT_SECRET,
         { expiresIn: "30h" }
